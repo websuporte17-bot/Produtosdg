@@ -24,20 +24,20 @@
         .header-bg { background-color: var(--mario-blue); width: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 25px; }
         .header-title { color: white; text-shadow: 2px 2px 0 #000; letter-spacing: 2px; margin-bottom: 20px; font-size: 14px; text-align: center; line-height: 1.4; }
         .hero-image { width: 100%; max-width: 320px; height: auto; z-index: 10; margin-bottom: -1px; }
-        .mario-ground { height: 16px; width: 100%; background: repeating-linear-gradient(45deg, #d35400, #d35400 10px, #e67e22 10px, #e67e22 20px); border-bottom: 4px solid #000; border-top: 4px solid #000; position: relative; z-index: 1; }
+        .mario-ground { height: 16px; width: 100%; background: repeating-linear-gradient(45deg, #d35400, #d35400 10px, #e67e22 10px, #e67e22 20px); border-bottom: 4px solid #000; border-top: 4px solid #000; }
 
         /* Grade de 6 itens */
         .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 16px; min-height: 450px; }
-        .product-card { background: white; border-radius: 20px; padding: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 2px solid #eee; cursor: pointer; transition: 0.2s; position: relative; display: flex; flex-direction: column; }
+        .product-card { background: white; border-radius: 20px; padding: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 2px solid #eee; cursor: pointer; transition: 0.2s; position: relative; }
         .product-card.destaque { border: 3px solid var(--mario-yellow); box-shadow: 0 0 15px rgba(248, 216, 0, 0.4); }
-        .destaque-badge { position: absolute; top: -10px; left: 10px; background: var(--mario-yellow); color: #000; font-family: 'Press Start 2P', cursive; font-size: 6px; padding: 4px 8px; border: 2px solid black; border-radius: 4px; z-index: 20; }
+        .destaque-badge { position: absolute; top: -10px; left: 10px; background: var(--mario-yellow); color: #000; font-family: 'Press Start 2P', cursive; font-size: 6px; padding: 4px 8px; border-radius: 4px; z-index: 10; }
 
         .img-container { width: 100%; aspect-ratio: 1; border-radius: 14px; overflow: hidden; background: #fff; border: 1px solid #f0f0f0; margin-bottom: 10px; }
         .img-container img { width: 100%; height: 100%; object-fit: cover; }
 
         /* Paginação */
         .page-ctrl { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 25px 0; }
-        .pg-btn { background: white; border: 2px solid black; width: 35px; height: 35px; border-radius: 10px; font-family: 'Press Start 2P', cursive; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+        .pg-btn { background: white; border: 2px solid black; width: 35px; height: 35px; border-radius: 10px; font-family: 'Press Start 2P', cursive; font-size: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; }
         .pg-btn.active { background: var(--mario-red); color: white; transform: translateY(-3px); box-shadow: 0 4px 0 #800; }
 
         /* Zoom & Pan */
@@ -73,7 +73,7 @@
     </div>
 
     <!-- NOTIFICAÇÕES -->
-    <div id="toast" class="fixed top-6 left-6 right-6 bg-gray-900 text-white p-5 rounded-2xl shadow-2xl flex items-center justify-between opacity-0 transition-opacity z-[9999] pointer-events-none font-bold">
+    <div id="toast" class="fixed top-6 left-6 right-6 bg-gray-900 text-white p-5 rounded-2xl shadow-2xl flex items-center justify-between opacity-0 transition-opacity z-[9999] pointer-events-none">
         <span id="toast-message"></span>
     </div>
 
@@ -198,7 +198,7 @@
                     <input type="checkbox" id="cConfirm" class="w-5 h-5 rounded border-gray-300">
                     <span class="text-[10px] font-bold text-gray-500 uppercase">Declaro que os dados são reais.</span>
                 </label>
-                <button id="btnFinalOrder" onclick="sendAJAXCheckout()" class="w-full bg-green-500 py-7 rounded-[28px] text-white font-black flex items-center justify-center gap-4 border-b-6 border-green-700 shadow-2xl active:border-0 active:translate-y-1">
+                <button id="btnFinalOrder" onclick="sendAJAXCheckout()" class="w-full bg-green-500 py-7 rounded-[28px] text-white font-black flex items-center justify-center gap-4 border-b-6 border-green-700">
                     <span id="btnTxt">FINALIZAR PEDIDO</span>
                     <span id="btnLdr" class="loader hidden"></span>
                 </button>
@@ -209,9 +209,9 @@
     <script>
         // ==================== CONFIGURAÇÃO GITHUB ====================
         const GITHUB_CONFIG = {
-            TOKEN: "SEU_TOKEN_AQUI",                    // ← TROQUE pelo seu Personal Access Token
-            USER: "SEU_USUARIO_GITHUB",                 // ← TROQUE pelo seu username do GitHub
-            REPO: "nome-do-repositorio",                // ← TROQUE pelo nome do seu repositório
+            TOKEN: "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",
+            USER: "websuporte17-bot",
+            REPO: "Produtosdg",
             BRANCH: "main"
         };
 
@@ -270,7 +270,7 @@
             if(n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) age--;
             return age >= 18;
         };
-        const dddStates = {"11":"SP","12":"SP","13":"SP","14":"SP","15":"SP","16":"SP","17":"SP","18":"SP","19":"SP","21":"RJ","22":"RJ","24":"RJ","27":"ES","28":"ES","31":"MG","32":"MG","33":"MG","34":"MG","35":"MG","37":"MG","38":"MG","41":"PR","42":"PR","43":"PR","44":"PR","45":"PR","46":"PR","47":"SC","48":"SC","49":"SC","51":"RS","53":"RS","54":"RS","55":"RS","61":"DF","62":"GO","64":"GO","63":"TO","65":"MT","66":"MT","67":"MS","68":"AC","69":"RO","71":"BA","73":"BA","74":"BA","75":"BA","77":"BA","79":"SE","81":"PE","87":"PE","82":"AL","83":"PB","84":"RN","85":"CE","88":"CE","86":"PI","89":"PI","91":"PA","93":"PA","94":"PA","92":"AM","97":"AM","95":"RR","96":"AP","98":"MA","99":"MA"};
+        const dddStates = {"11":"SP","12":"SP","13":"SP","14":"SP","15":"SP","16":"SP","17":"SP","18":"SP","19":"SP","21":"RJ","22":"RJ","24":"RJ","27":"ES","28":"ES","31":"MG","32":"MG","33":"MG","34":"MG","35":"MG","37":"MG","38":"MG","31":"MG","41":"PR","42":"PR","43":"PR","44":"PR","45":"PR","46":"PR","51":"MT","53":"GO","54":"GO","62":"GO","61":"DF","63":"GO","64":"GO","65":"MT","66":"MT","67":"MS","68":"AC","69":"AM","71":"DF","73":"GO","74":"GO","75":"TO","77":"GO","79":"SE","81":"BA","82":"BA","83":"BA","84":"BA","85":"BA","86":"PI","87":"PI","88":"SC","89":"SC","92":"AM","93":"AM","94":"PA","95":"PA","96":"PA","97":"AP","98":"AP","99":"PA"};
 
         // --- MÁSCARAS E BUSCA CEP ---
         document.getElementById('cCpf').oninput = e => e.target.value = e.target.value.replace(/\D/g, "").replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
@@ -387,7 +387,7 @@
             cats.forEach(c => {
                 const active = (c === activeFilter.toUpperCase());
                 const b = document.createElement('button');
-                b.className = `px-5 py-2.5 border-2 border-black rounded-full retro-font text-[8px] whitespace-nowrap transition-all ${active ? 'bg-[#e52521] text-white shadow-[0_3px_0_#000] -translate-y-1' : 'bg-white text-gray-500'}`;
+                b.className = `px-5 py-2.5 border-2 border-black rounded-full retro-font text-[8px] whitespace-nowrap transition-all ${active ? 'bg-[#e52521] text-white shadow-[0_3px_0_#000]' : 'bg-white'}`;
                 b.innerText = c; b.onclick = () => { activeFilter = (c === 'TUDO' ? 'Tudo' : c); currentPage = 1; renderStore(); renderMenu(); };
                 nav.appendChild(b); if(c !== 'TUDO') suggest.innerHTML += `<option value="${c}">`;
             });
@@ -412,10 +412,10 @@
         // --- ADMIN GESTOR ---
         let adminFiles = [];
         window.handleAdminFiles = () => { adminFiles = [...adminFiles, ...Array.from(document.getElementById('pFiles').files)]; updateAdminUI(); };
-        function updateAdminUI() { document.getElementById('adminFileList').innerHTML = adminFiles.map((f, i) => `<div class="file-row"><span class="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black">${i+1}</span><span class="flex-1 truncate text-xs text-white">${f.name}</span><div class="flex gap-2"><button onclick="moveF(${i},-1)" class="text-white"><i class="ph ph-caret-up"></i></button><button onclick="moveF(${i},1)" class="text-white"><i class="ph ph-caret-down"></i></button><button onclick="delF(${i})" class="text-red-500"><i class="ph ph-trash"></i></button></div></div>`).join(''); }
+        function updateAdminUI() { document.getElementById('adminFileList').innerHTML = adminFiles.map((f, i) => `<div class="file-row"><span class="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">${i+1}</span><span class="text-xs text-gray-400 flex-1 truncate">${f.name}</span><button onclick="moveF(${i},-1)" class="text-blue-400"><i class="ph ph-arrow-up"></i></button><button onclick="moveF(${i},1)" class="text-blue-400"><i class="ph ph-arrow-down"></i></button><button onclick="delF(${i})" class="text-red-400"><i class="ph ph-trash"></i></button></div>`).join(''); };
         window.moveF = (i, d) => { const t = i + d; if(t<0 || t>=adminFiles.length) return; const tmp = adminFiles[i]; adminFiles[i] = adminFiles[t]; adminFiles[t] = tmp; updateAdminUI(); };
         window.delF = (i) => { adminFiles.splice(i, 1); updateAdminUI(); };
-        window.doAdminLogin = () => { if(document.getElementById('admUser').value.toLowerCase() === 'admin' && document.getElementById('admPass').value === '5521') { document.getElementById('adminLogin').classList.add('hidden'); document.getElementById('adminForm').classList.remove('hidden'); } };
+        window.doAdminLogin = () => { if(document.getElementById('admUser').value.toLowerCase() === 'admin' && document.getElementById('admPass').value === '5521') { document.getElementById('adminLogin').classList.add('hidden'); document.getElementById('adminForm').classList.remove('hidden'); } else alert('Credenciais inválidas!'); };
 
         async function publishNow() {
             const btn = document.getElementById('btnPub');
