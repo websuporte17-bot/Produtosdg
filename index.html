@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nelson Games V24 - Sistema Blindado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700;900&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        :root {
+            --mario-blue: #5c94fc;
+            --mario-green: #00a800;
+            --mario-red: #e52521;
+            --mario-yellow: #f8d800;
+            --bg-color: #f4f5f7;
+        }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        .retro-font { font-family: 'Press Start 2P', cursive; }
+        
+        .header-bg { background-color: var(--mario-blue); width: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 25px; }
+        .header-title { color: white; text-shadow: 2px 2px 0 #000; letter-spacing: 2px; margin-bottom: 20px; font-size: 14px; text-align: center; line-height: 1.4; }
+        .hero-image { width: 100%; max-width: 320px; height: auto; z-index: 10; margin-bottom: -1px; }
+        .mario-ground { height: 16px; width: 100%; background: repeating-linear-gradient(45deg, #d35400, #d35400 10px, #e67e22 10px, #e67e22 20px); border-bottom: 4px solid #000; border-top: 4px solid #000; }
+
+        .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 16px; min-height: 450px; }
+        .product-card { background: white; border-radius: 20px; padding: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 2px solid #eee; cursor: pointer; transition: 0.2s; position: relative; }
+        .product-card.destaque { border: 3px solid var(--mario-yellow); box-shadow: 0 0 15px rgba(248, 216, 0, 0.4); }
+        .destaque-badge { position: absolute; top: -10px; left: 10px; background: var(--mario-yellow); color: #000; font-family: 'Press Start 2P', cursive; font-size: 6px; padding: 4px 8px; border-radius: 4px; z-index: 10; }
+
+        .img-container { width: 100%; aspect-ratio: 1; border-radius: 14px; overflow: hidden; background: #fff; border: 1px solid #f0f0f0; margin-bottom: 10px; }
+        .img-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        .page-ctrl { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 25px 0; }
+        .pg-btn { background: white; border: 2px solid black; width: 35px; height: 35px; border-radius: 10px; font-family: 'Press Start 2P', cursive; font-size: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; }
+        .pg-btn.active { background: var(--mario-red); color: white; transform: translateY(-3px); box-shadow: 0 4px 0 #800; }
+
+        .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .zoom-stage { width: 100%; height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: grab; touch-action: none; }
+        .zoom-img { transition: transform 0.25s ease-out; max-width: 95%; max-height: 85%; object-fit: contain; pointer-events: none; }
+
+        .admin-pane { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 5000; display: none; flex-direction: column; color: white; padding: 20px; }
+        .input-tech { background: #1a1a1a; border: 2px solid #333; border-radius: 14px; padding: 14px; color: white; width: 100%; outline: none; margin-bottom: 12px; font-size: 14px; }
+        
+        .loader { width: 20px; height: 20px; border: 3px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div id="lightbox" class="lightbox">
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white text-4xl z-[10001]"><i class="ph ph-x-circle"></i></button>
+        <div class="zoom-stage" id="zoomStage">
+            <img id="zoomImg" src="" class="zoom-img">
+        </div>
+    </div>
+
+    <div id="toast" class="fixed top-6 left-6 right-6 bg-gray-900 text-white p-5 rounded-2xl shadow-2xl flex items-center justify-between opacity-0 transition-opacity z-[9999] pointer-events-none">
+        <span id="toast-message"></span>
+    </div>
+
+    <div class="max-w-md mx-auto bg-[var(--bg-color)] min-h-screen relative pb-48 shadow-2xl">
+        <header class="header-bg">
+            <h1 class="retro-font header-title">NELSON<br>GAMES</h1>
+            <img src="https://github.com/user-attachments/assets/d158e9a0-58c0-40df-9212-737aeb0f16f9" alt="Nelson Games" class="hero-image">
+        </header>
+        <div class="mario-ground"></div>
+
+        <div class="bg-[var(--bg-color)] py-4 px-4 sticky top-0 z-50 border-b border-gray-200 overflow-x-auto flex space-x-2 hide-scroll" id="navCats">
+            <button onclick="setFilter('Tudo')" class="px-5 py-2.5 bg-[#e52521] text-white border-2 border-black rounded-full retro-font text-[9px] whitespace-nowrap">TUDO</button>
+        </div>
+
+        <div id="loading" class="flex flex-col items-center justify-center py-28 text-gray-400">
+            <i class="ph-fill ph-circle-notch animate-spin text-5xl mb-4 text-blue-500"></i>
+            <p class="retro-font text-[8px] uppercase tracking-widest">Localizando Itens...</p>
+        </div>
+
+        <main class="products-grid hidden" id="grid"></main>
+        <div class="page-ctrl hidden" id="pagination"></div>
+
+        <div id="cartBar" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 p-5 hidden z-[400] rounded-t-[30px] shadow-2xl">
+            <div class="flex justify-between items-center mb-5">
+                <div class="flex items-center gap-4">
+                    <div class="bg-[var(--mario-red)] text-white w-12 h-12 rounded-2xl flex items-center justify-center font-black text-2xl border-2 border-black" id="qCount">0</div>
+                    <div>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase">Total Atual</p>
+                        <div class="font-black text-2xl text-gray-900" id="vTotal">R$ 0,00</div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="openBasket()" class="w-full bg-[var(--mario-red)] py-5 rounded-2xl text-white font-black retro-font text-[11px] border-b-4 border-red-900 shadow-lg">
+                CONFERIR SACOLA 🍄
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const GITHUB_CONFIG = {
+            TOKEN: "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",
+            USER: "websuporte17-bot",
+            REPO: "Produtosdg",
+            BRANCH: "main"
+        };
+
+        let allProducts = [];
+        let cart = [];
+        let activeFilter = 'Tudo';
+        let currentPage = 1;
+        const perPage = 6;
+
+        async function loadProducts() {
+            try {
+                const url = `https://api.github.com/repos/${GITHUB_CONFIG.USER}/${GITHUB_CONFIG.REPO}/contents/produtos.json?ref=${GITHUB_CONFIG.BRANCH}`;
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `token ${GITHUB_CONFIG.TOKEN}` }
+                });
+                
+                if (!res.ok) throw new Error('Falha ao acessar repositório');
+                
+                const data = await res.json();
+                
+                const decodedContent = decodeURIComponent(escape(atob(data.content)));
+                allProducts = JSON.parse(decodedContent);
+                
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('grid').classList.remove('hidden');
+                document.getElementById('pagination').classList.remove('hidden');
+                
+                renderStore();
+                renderMenu();
+            } catch (e) {
+                console.error(e);
+                document.getElementById('loading').innerHTML = '<p class="text-red-500 retro-font text-[7px]">Erro ao carregar banco de dados.</p>';
+            }
+        }
+
+        function renderStore() {
+            const container = document.getElementById('grid');
+            const filtered = activeFilter.toLowerCase() === 'tudo' 
+                ? allProducts 
+                : allProducts.filter(p => p.category.toUpperCase() === activeFilter.toUpperCase());
+
+            const totalPages = Math.ceil(filtered.length / perPage);
+            const slice = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+            
+            container.innerHTML = slice.length ? '' : '<div class="col-span-2 text-center py-24 opacity-30 italic">Nenhum item encontrado.</div>';
+            
+            slice.forEach((p, idx) => {
+                const card = document.createElement('div');
+                const isDestaque = (activeFilter.toLowerCase() === 'tudo' && currentPage === 1 && idx < 2);
+                card.className = `product-card ${isDestaque ? 'destaque' : ''}`;
+                card.innerHTML = `
+                    ${isDestaque ? '<div class="destaque-badge">DESTAQUE</div>' : ''}
+                    <div class="img-container"><img src="${p.media[0]?.url || ''}"></div>
+                    <div>
+                        <span class="text-[9px] font-black text-blue-500 uppercase">${p.category}</span>
+                        <h3 class="font-bold text-[11px] line-clamp-1 mt-1 uppercase">${p.name}</h3>
+                        <p class="font-black text-green-600 text-sm mt-1">R$ ${parseFloat(p.price).toFixed(2)}</p>
+                    </div>`;
+                container.appendChild(card);
+            });
+            renderPagination(totalPages);
+        }
+
+        function renderPagination(total) {
+            const nav = document.getElementById('pagination');
+            nav.innerHTML = ''; if (total <= 1) return;
+            for (let i = 1; i <= total; i++) {
+                const btn = document.createElement('button');
+                btn.className = `pg-btn ${i === currentPage ? 'active' : ''}`; btn.innerText = i;
+                btn.onclick = () => { currentPage = i; renderStore(); window.scrollTo(0,350); };
+                nav.appendChild(btn);
+            }
+        }
+
+        function renderMenu() {
+            const cats = ['TUDO', ...new Set(allProducts.map(p => p.category.toUpperCase()))];
+            const nav = document.getElementById('navCats');
+            nav.innerHTML = '';
+            cats.forEach(c => {
+                const active = (c === activeFilter.toUpperCase());
+                const b = document.createElement('button');
+                b.className = `px-5 py-2.5 border-2 border-black rounded-full retro-font text-[8px] whitespace-nowrap transition-all ${active ? 'bg-[#e52521] text-white' : 'bg-white'}`;
+                b.innerText = c; 
+                b.onclick = () => { activeFilter = c; currentPage = 1; renderStore(); renderMenu(); };
+                nav.appendChild(b);
+            });
+        }
+
+        function setFilter(f) { activeFilter = f; currentPage = 1; renderStore(); renderMenu(); }
+        window.onload = loadProducts;
+    </script>
+</body>
+</html>

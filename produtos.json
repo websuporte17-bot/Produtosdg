@@ -1,0 +1,132 @@
+[
+  {
+    "id": 1,
+    "name": "SUPER MARIO WORLD - SNES",
+    "price": "150.00",
+    "category": "RETRO",
+    "description": "Clássico absoluto do Super Nintendo. Cartucho salvando perfeitamente e labels originais.",
+    "media": [
+      {
+        "url": "https://raw.githubusercontent.com/websuporte17-bot/Produtosdg/main/images/1773791513360.png",
+        "type": "photo"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "THE LEGEND OF ZELDA - NES",
+    "price": "200.00",
+    "category": "RETRO",
+    "description": "Clássico dos clássicos. Cartucho funcionando perfeitamente com caixa original.",
+    "media": [
+      {
+        "url": "https://raw.githubusercontent.com/websuporte17-bot/Produtosdg/main/images/1773791513360.png",
+        "type": "photo"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "PLAYSTATION 2 - CONSOLE",
+    "price": "350.00",
+    "category": "CONSOLE",
+    "description": "PS2 com controle original. Tudo funcionando perfeitamente, sem problemas de leitura.",
+    "media": [
+      {
+        "url": "https://raw.githubusercontent.com/websuporte17-bot/Produtosdg/main/images/1773791513360.png",
+        "type": "photo"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "SONIC THE HEDGEHOG - GENESIS",
+    "price": "120.00",
+    "category": "RETRO",
+    "description": "Cartucho em ótimo estado, labels intactos. Funcionando 100%.",
+    "media": [
+      {
+        "url": "https://raw.githubusercontent.com/websuporte17-bot/Produtosdg/main/images/1773791513360.png",
+        "type": "photo"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "DONKEY KONG COUNTRY - SNES",
+    "price": "180.00",
+    "category": "RETRO",
+    "description": "Cartucho SNES com caixa e manual. Estado de conservação excelente.",
+    "media": [
+      {
+        "url": "https://raw.githubusercontent.com/websuporte17-bot/Produtosdg/main/images/1773791513360.png",
+        "type": "photo"
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "MEGA MAN 3 - NES",
+    "price": "130.00",
+    "category": "RETRO",
+    "description": "Clássico do NES. Cartucho funcionando perfeitamente sem travamentos.",
+    "media": [
+      {
+        "url": "https://raw.githubusercontent.com/websuporte17-bot/Produtosdg/main/images/1773791513360.png",
+        "type": "photo"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "STREET FIGHTER II - SNES",
+    "price": "160.00",
+    "category": "RETRO",
+    "description": "Um dos melhores jogos de luta do SNES. Cartucho com label original impecável.",
+    "media": [
+      {
+        "url": "https://raw.githubusercontent.com/websuporte17-bot/Produtosdg/main/images/1773791513360.png",
+        "type": "photo"
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "GAME BOY CLASSIC",
+    "price": "250.00",
+    "category": "CONSOLE",
+    "description": "Game Boy original com bateria, tela funcionando bem. Vem com alguns jogos.",
+    "media": [
+      {
+        "url": "https://raw.githubusercontent.com/websuporte17-bot/Produtosdg/main/images/1773791513360.png",
+        "type": "photo"
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "name": "METROID - NES",
+    "price": "175.00",
+    "category": "RETRO",
+    "description": "Jogo clássico do NES em perfeito estado. Funcionamento garantido.",
+    "media": [
+      {
+        "url": "https://raw.githubusercontent.com/websuporte17-bot/Produtosdg/main/images/1773791513360.png",
+        "type": "photo"
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "CASTLEVANIA - NES",
+    "price": "140.00",
+    "category": "RETRO",
+    "description": "Clássico horror do NES em ótimo estado. Cartucho raro e bem conservado.",
+    "media": [
+      {
+        "url": "https://raw.githubusercontent.com/websuporte17-bot/Produtosdg/main/images/1773791513360.png",
+        "type": "photo"
+      }
+    ]
+  }
+]
