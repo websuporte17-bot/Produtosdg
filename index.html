@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nelson Games V24 - Sistema Blindado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700;900&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        :root {
+            --mario-blue: #5c94fc;
+            --mario-green: #00a800;
+            --mario-red: #e52521;
+            --mario-yellow: #f8d800;
+            --bg-color: #f4f5f7;
+        }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        .retro-font { font-family: 'Press Start 2P', cursive; }
+        
+        /* Header */
+        .header-bg { background-color: var(--mario-blue); width: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 25px; }
+        .header-title { color: white; text-shadow: 2px 2px 0 #000; letter-spacing: 2px; margin-bottom: 20px; font-size: 14px; text-align: center; line-height: 1.4; }
+        .hero-image { width: 100%; max-width: 320px; height: auto; z-index: 10; margin-bottom: -1px; }
+        .mario-ground { height: 16px; width: 100%; background: repeating-linear-gradient(45deg, #d35400, #d35400 10px, #e67e22 10px, #e67e22 20px); border-bottom: 4px solid #000; border-top: 4px solid #000; position: relative; z-index: 1; }
+
+        /* Grade de 6 itens */
+        .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 16px; min-height: 450px; }
+        .product-card { background: white; border-radius: 20px; padding: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 2px solid #eee; cursor: pointer; transition: 0.2s; position: relative; display: flex; flex-direction: column; }
+        .product-card.destaque { border: 3px solid var(--mario-yellow); box-shadow: 0 0 15px rgba(248, 216, 0, 0.4); }
+        .destaque-badge { position: absolute; top: -10px; left: 10px; background: var(--mario-yellow); color: #000; font-family: 'Press Start 2P', cursive; font-size: 6px; padding: 4px 8px; border: 2px solid black; border-radius: 4px; z-index: 20; }
+
+        .img-container { width: 100%; aspect-ratio: 1; border-radius: 14px; overflow: hidden; background: #fff; border: 1px solid #f0f0f0; margin-bottom: 10px; }
+        .img-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Paginação */
+        .page-ctrl { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 25px 0; }
+        .pg-btn { background: white; border: 2px solid black; width: 35px; height: 35px; border-radius: 10px; font-family: 'Press Start 2P', cursive; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+        .pg-btn.active { background: var(--mario-red); color: white; transform: translateY(-3px); box-shadow: 0 4px 0 #800; }
+
+        /* Zoom & Pan */
+        .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .zoom-stage { width: 100%; height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: grab; touch-action: none; }
+        .zoom-img { transition: transform 0.25s ease-out; max-width: 95%; max-height: 85%; object-fit: contain; pointer-events: none; }
+
+        /* Admin */
+        .admin-pane { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 5000; display: none; flex-direction: column; color: white; padding: 20px; }
+        .input-tech { background: #1a1a1a; border: 2px solid #333; border-radius: 14px; padding: 14px; color: white; width: 100%; outline: none; margin-bottom: 12px; font-size: 14px; }
+        .file-row { background: #222; border: 1px solid #444; padding: 10px; border-radius: 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+
+        .validation-error { color: #ff4d4d; font-size: 10px; font-weight: bold; margin-top: -8px; margin-bottom: 10px; display: block; }
+        .loader { width: 20px; height: 20px; border: 3px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .hide-scroll::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- LIGHTBOX ZOOM PRO -->
+    <div id="lightbox" class="lightbox">
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white text-4xl z-[10001]"><i class="ph ph-x-circle"></i></button>
+        <div class="zoom-stage" id="zoomStage" onmousedown="startPan(event)" onmousemove="doPan(event)" onmouseup="endPan()" ontouchstart="startPan(event)" ontouchmove="doPan(event)" ontouchend="endPan()">
+            <img id="zoomImg" src="" class="zoom-img">
+        </div>
+        <div class="fixed bottom-10 flex gap-4 z-[10001]">
+            <button onclick="zoomStep(-0.5)" class="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center text-white text-2xl border border-white/20"><i class="ph ph-minus"></i></button>
+            <button onclick="resetZoom()" class="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center text-white text-2xl border border-white/20"><i class="ph ph-arrows-out"></i></button>
+            <button onclick="zoomStep(0.5)" class="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center text-white text-2xl border border-white/20"><i class="ph ph-plus"></i></button>
+        </div>
+    </div>
+
+    <!-- NOTIFICAÇÕES -->
+    <div id="toast" class="fixed top-6 left-6 right-6 bg-gray-900 text-white p-5 rounded-2xl shadow-2xl flex items-center justify-between opacity-0 transition-opacity z-[9999] pointer-events-none font-bold">
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- ESTRUTURA DA PÁGINA (CARREGA PRIMEIRO) -->
+    <div class="max-w-md mx-auto bg-[var(--bg-color)] min-h-screen relative pb-48 shadow-2xl">
+        <header class="header-bg">
+            <h1 class="retro-font header-title">NELSON<br>GAMES</h1>
+            <img src="https://github.com/user-attachments/assets/d158e9a0-58c0-40df-9212-737aeb0f16f9" alt="Nelson Games" class="hero-image">
+        </header>
+        <div class="mario-ground"></div>
+
+        <!-- Categorias (Vazio inicial) -->
+        <div class="bg-[var(--bg-color)] py-4 px-4 sticky top-0 z-50 border-b border-gray-200 overflow-x-auto flex space-x-2 hide-scroll" id="navCats">
+            <button onclick="setFilter('Tudo')" class="px-5 py-2.5 bg-[#e52521] text-white border-2 border-black rounded-full retro-font text-[9px] whitespace-nowrap shadow-sm">TUDO</button>
+        </div>
+
+        <!-- Lista de Produtos (Skeleton/Loading) -->
+        <div id="loading" class="flex flex-col items-center justify-center py-28 text-gray-400">
+            <i class="ph-fill ph-circle-notch animate-spin text-5xl mb-4 text-blue-500"></i>
+            <p class="retro-font text-[8px] uppercase tracking-widest">Localizando Itens...</p>
+        </div>
+
+        <main class="products-grid hidden" id="grid"></main>
+        <div class="page-ctrl hidden" id="pagination"></div>
+
+        <!-- Barra Carrinho -->
+        <div id="cartBar" class="fixed bottom-0 left-0 right-0 max-w-448 mx-auto bg-white border-t border-gray-200 p-5 hidden z-[400] rounded-t-[30px] shadow-2xl">
+            <div class="flex justify-between items-center mb-5">
+                <div class="flex items-center gap-4">
+                    <div class="bg-[var(--mario-red)] text-white w-12 h-12 rounded-2xl flex items-center justify-center font-black text-2xl border-2 border-black" id="qCount">0</div>
+                    <div>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none">Total Atual</p>
+                        <div class="font-black text-2xl text-gray-900 leading-tight" id="vTotal">R$ 0,00</div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="openBasket()" class="w-full bg-[var(--mario-red)] py-5 rounded-2xl text-white font-black retro-font text-[11px] border-b-4 border-red-900 shadow-lg">
+                CONFERIR SACOLA 🍄
+            </button>
+        </div>
+    </div>
+
+    <!-- Botão Gestor -->
+    <div class="fixed bottom-40 right-6 w-16 h-16 bg-zinc-900 border-4 border-blue-500 rounded-[22px] flex items-center justify-center shadow-2xl z-[450] cursor-pointer" onclick="toggleAdmin()">
+        <i class="ph-fill ph-robot text-blue-500 text-4xl"></i>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="admin-pane overflow-y-auto">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="tech-font text-blue-400 text-xl font-black italic">DGLEAN GESTOR V24</h2>
+            <button onclick="toggleAdmin()"><i class="ph ph-x text-3xl"></i></button>
+        </div>
+
+        <div id="adminLogin" class="flex-1 flex flex-col justify-center space-y-4">
+            <input type="text" id="admUser" placeholder="ADMIN" class="input-tech text-center uppercase font-black tracking-widest">
+            <input type="password" id="admPass" placeholder="SENHA" class="input-tech text-center">
+            <button onclick="doAdminLogin()" class="w-full bg-blue-600 py-6 rounded-2xl font-black tech-font text-xl border-b-4 border-blue-800">ENTRAR</button>
+        </div>
+
+        <div id="adminForm" class="hidden flex-1 pb-10">
+            <label class="text-[10px] font-black text-blue-400 block mb-3 uppercase">Anexos (Ordem de Postagem)</label>
+            <input type="file" id="pFiles" multiple accept="image/*,video/*" class="hidden" onchange="handleAdminFiles()">
+            <label for="pFiles" class="w-full bg-zinc-900 border-4 border-dashed border-zinc-800 rounded-3xl p-10 flex flex-col items-center justify-center cursor-pointer mb-6 hover:border-blue-500">
+                <i class="ph ph-cloud-arrow-up text-5xl text-zinc-700"></i>
+                <span class="text-xs text-zinc-500 font-bold mt-3">Anexar Fotos/Vídeos</span>
+            </label>
+            <div id="adminFileList" class="mb-8 space-y-2"></div>
+
+            <input type="text" id="pName" placeholder="TÍTULO DO PRODUTO" class="input-tech !bg-zinc-800 border-zinc-700 font-bold uppercase">
+            <input type="text" id="pPrice" placeholder="PREÇO (EX: 150.00)" class="input-tech !bg-zinc-800 border-zinc-700 font-bold">
+            <input list="catSug" id="pCat" placeholder="CATEGORIA" class="input-tech !bg-zinc-800 border-zinc-700 font-bold uppercase">
+            <datalist id="catSug"></datalist>
+            <textarea id="pDesc" placeholder="DESCRIÇÃO COMPLETA..." class="input-tech !bg-zinc-800 border-zinc-700 h-32"></textarea>
+            
+            <button id="btnPub" onclick="publishNow()" class="w-full bg-green-600 py-7 rounded-3xl font-black text-2xl tech-font border-b-6 border-green-800">
+                <i class="ph-fill ph-rocket-launch"></i> PUBLICAR NO GITHUB
+            </button>
+        </div>
+    </div>
+
+    <!-- Detalhes do Produto -->
+    <div id="detailModal" class="fixed inset-0 bg-black/95 z-[1000] hidden flex-col justify-end max-w-md mx-auto">
+        <div class="bg-white w-full rounded-t-[45px] max-h-[95vh] overflow-y-auto flex flex-col relative animate-slide-up">
+            <button onclick="closeModal('detailModal')" class="absolute top-6 right-6 bg-white/80 w-12 h-12 rounded-full flex items-center justify-center font-bold z-[1100] shadow-xl">✕</button>
+            <div id="detHeroBox" class="w-full h-80 bg-gray-50 flex items-center justify-center overflow-hidden" onclick="openLightbox()"></div>
+            <div id="detThumbs" class="flex gap-3 p-5 bg-white border-b overflow-x-auto hide-scroll justify-center"></div>
+            <div class="p-10">
+                <span id="dtCat" class="text-[11px] font-black text-blue-500 uppercase bg-blue-50 px-3 py-1 rounded-full"></span>
+                <h2 id="dtTitle" class="font-bold text-3xl text-gray-900 mt-4 mb-3 leading-tight uppercase"></h2>
+                <div id="dtPrice" class="font-black text-3xl text-green-600 mb-8"></div>
+                <div id="dtDesc" class="text-gray-600 text-base leading-relaxed mb-10 border-l-4 border-gray-200 pl-5 whitespace-pre-line"></div>
+                <button onclick="addToBasket()" class="w-full bg-green-600 text-white py-6 rounded-3xl font-black text-[12px] retro-font border-b-6 border-green-900">
+                    ADICIONAR À CESTA 🍄
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal (AJAX - Sem sair da página) -->
+    <div id="basketModal" class="fixed inset-0 bg-black/80 z-[2000] hidden flex-col justify-end max-w-md mx-auto">
+        <div class="bg-white w-full rounded-t-[45px] p-8 pb-16 overflow-y-auto max-h-[90vh]">
+            <h2 class="retro-font text-[12px] mb-8 border-b pb-5 text-center uppercase">Check-out Final 🎮</h2>
+            <div id="basketItems" class="space-y-4 mb-8 border-b pb-8"></div>
+
+            <div class="space-y-4">
+                <div><input type="text" id="cName" placeholder="Nome e Sobrenome" class="input-tech !bg-gray-100 border-gray-200"><span id="errName" class="validation-error"></span></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><input type="text" id="cCpf" placeholder="CPF" class="input-tech !bg-gray-100 border-gray-200" maxlength="14"><span id="errCpf" class="validation-error"></span></div>
+                    <div><input type="text" id="cBirth" placeholder="Nascimento" class="input-tech !bg-gray-100 border-gray-200" maxlength="10"><span id="errBirth" class="validation-error"></span></div>
+                </div>
+                <div><input type="email" id="cEmail" placeholder="E-mail" class="input-tech !bg-gray-100 border-gray-200"><span id="errEmail" class="validation-error"></span></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><input type="text" id="cCep" placeholder="CEP" class="input-tech !bg-gray-100 border-gray-200" maxlength="9"><span id="errCep" class="validation-error"></span></div>
+                    <div><input type="text" id="cPhone" placeholder="WhatsApp" class="input-tech !bg-gray-100 border-gray-200" maxlength="15"><span id="errPhone" class="validation-error"></span></div>
+                </div>
+                <div id="addrDisplay" class="hidden bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-4">
+                    <p id="addrText" class="text-xs text-blue-800 font-bold mb-2"></p>
+                    <input type="text" id="cNum" placeholder="Nº da Casa" class="input-tech !mb-0 !bg-white border-blue-200">
+                </div>
+                <label class="flex items-center gap-3 p-2 cursor-pointer">
+                    <input type="checkbox" id="cConfirm" class="w-5 h-5 rounded border-gray-300">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">Declaro que os dados são reais.</span>
+                </label>
+                <button id="btnFinalOrder" onclick="sendAJAXCheckout()" class="w-full bg-green-500 py-7 rounded-[28px] text-white font-black flex items-center justify-center gap-4 border-b-6 border-green-700 shadow-2xl active:border-0 active:translate-y-1">
+                    <span id="btnTxt">FINALIZAR PEDIDO</span>
+                    <span id="btnLdr" class="loader hidden"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CONFIGURAÇÃO GITHUB ====================
+        const GITHUB_CONFIG = {
+            TOKEN: "SEU_TOKEN_AQUI",                    // ← TROQUE pelo seu Personal Access Token
+            USER: "SEU_USUARIO_GITHUB",                 // ← TROQUE pelo seu username do GitHub
+            REPO: "nome-do-repositorio",                // ← TROQUE pelo nome do seu repositório
+            BRANCH: "main"
+        };
+
+        const WA_NUM = "5511917039787";
+        const ADMIN_EMAIL = "websuporte17@gmail.com";
+
+        let allProducts = [];
+        let cart = [];
+        let selectedProduct = null;
+        let activeFilter = 'Tudo';
+        let currentPage = 1;
+        const perPage = 6;
+        let currentImgIdx = 0;
+        let currentUF = "";
+
+        // --- CARREGAR PRODUTOS DO GITHUB ---
+        async function loadProducts() {
+            try {
+                const url = `https://api.github.com/repos/${GITHUB_CONFIG.USER}/${GITHUB_CONFIG.REPO}/contents/produtos.json?ref=${GITHUB_CONFIG.BRANCH}`;
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `token ${GITHUB_CONFIG.TOKEN}` }
+                });
+                
+                if (!res.ok) throw new Error('Arquivo não encontrado');
+                
+                const data = await res.json();
+                const content = atob(data.content);
+                allProducts = JSON.parse(content);
+                
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('grid').classList.remove('hidden');
+                document.getElementById('pagination').classList.remove('hidden');
+                renderStore();
+                renderMenu();
+            } catch (e) {
+                console.error("Erro ao carregar produtos", e);
+                document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold retro-font text-[7px]">Erro ao carregar. Verifique as configurações.</p>';
+            }
+        }
+
+        // --- VALIDAÇÕES SUPREMAS ---
+        const calcCPF = (cpf) => {
+            cpf = cpf.replace(/\D/g, '');
+            if(cpf.length !== 11 || !!cpf.match(/(\d)\1{10}/)) return false;
+            let s = 0; for(let i=0; i<9; i++) s += parseInt(cpf.charAt(i)) * (10-i);
+            let r = 11 - (s % 11); if(r > 9) r = 0;
+            if(r !== parseInt(cpf.charAt(9))) return false;
+            s = 0; for(let i=0; i<10; i++) s += parseInt(cpf.charAt(i)) * (11-i);
+            r = 11 - (s % 11); if(r > 9) r = 0;
+            return r === parseInt(cpf.charAt(10));
+        };
+        const calcAge = (val) => {
+            const parts = val.split('/'); if(parts.length < 3) return false;
+            const b = new Date(parts[2], parts[1]-1, parts[0]);
+            const n = new Date(); let age = n.getFullYear() - b.getFullYear();
+            if(n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) age--;
+            return age >= 18;
+        };
+        const dddStates = {"11":"SP","12":"SP","13":"SP","14":"SP","15":"SP","16":"SP","17":"SP","18":"SP","19":"SP","21":"RJ","22":"RJ","24":"RJ","27":"ES","28":"ES","31":"MG","32":"MG","33":"MG","34":"MG","35":"MG","37":"MG","38":"MG","41":"PR","42":"PR","43":"PR","44":"PR","45":"PR","46":"PR","47":"SC","48":"SC","49":"SC","51":"RS","53":"RS","54":"RS","55":"RS","61":"DF","62":"GO","64":"GO","63":"TO","65":"MT","66":"MT","67":"MS","68":"AC","69":"RO","71":"BA","73":"BA","74":"BA","75":"BA","77":"BA","79":"SE","81":"PE","87":"PE","82":"AL","83":"PB","84":"RN","85":"CE","88":"CE","86":"PI","89":"PI","91":"PA","93":"PA","94":"PA","92":"AM","97":"AM","95":"RR","96":"AP","98":"MA","99":"MA"};
+
+        // --- MÁSCARAS E BUSCA CEP ---
+        document.getElementById('cCpf').oninput = e => e.target.value = e.target.value.replace(/\D/g, "").replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+        document.getElementById('cBirth').oninput = e => e.target.value = e.target.value.replace(/\D/g, "").replace(/(\d{2})(\d{2})(\d{4})/, "$1/$2/$3");
+        document.getElementById('cPhone').oninput = e => e.target.value = e.target.value.replace(/\D/g, "").replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+        document.getElementById('cCep').oninput = async e => {
+            let cep = e.target.value.replace(/\D/g, "");
+            if(cep.length === 8) {
+                const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                const d = await r.json();
+                if(!d.erro) {
+                    currentUF = d.uf;
+                    const addr = `${d.logradouro}, ${d.bairro} - ${d.localidade}/${d.uf}`;
+                    document.getElementById('addrText').innerText = addr;
+                    document.getElementById('addrDisplay').classList.remove('hidden');
+                    document.getElementById('errCep').innerText = "";
+                } else { document.getElementById('errCep').innerText = "CEP INVÁLIDO"; }
+            }
+            e.target.value = cep.replace(/(\d{5})(\d{3})/, "$1-$2");
+        };
+
+        // --- AJAX CHECKOUT (SEM REDIRECIONAR) ---
+        window.sendAJAXCheckout = async () => {
+            const name = document.getElementById('cName').value.trim();
+            const cpf = document.getElementById('cCpf').value;
+            const birth = document.getElementById('cBirth').value;
+            const email = document.getElementById('cEmail').value;
+            const phone = document.getElementById('cPhone').value;
+            const num = document.getElementById('cNum').value;
+            const confirmed = document.getElementById('cConfirm').checked;
+
+            let hasErr = false;
+            if(name.split(' ').length < 2) { document.getElementById('errName').innerText = "DIGITE NOME E SOBRENOME"; hasErr = true; } else document.getElementById('errName').innerText = "";
+            if(!calcCPF(cpf)) { document.getElementById('errCpf').innerText = "CPF INVÁLIDO"; hasErr = true; } else document.getElementById('errCpf').innerText = "";
+            if(!calcAge(birth)) { document.getElementById('errBirth').innerText = "PROIBIDO MENORES DE 18"; hasErr = true; } else document.getElementById('errBirth').innerText = "";
+            if(!email.includes('@')) { document.getElementById('errEmail').innerText = "E-MAIL INVÁLIDO"; hasErr = true; } else document.getElementById('errEmail').innerText = "";
+            const ddd = phone.replace(/\D/g, "").substring(0,2);
+            if(dddStates[ddd] !== currentUF) { document.getElementById('errPhone').innerText = `DDD ${ddd} NÃO É DE ${currentUF}`; hasErr = true; } else document.getElementById('errPhone').innerText = "";
+            if(!num) { alert("DIGITE O NÚMERO!"); return; }
+            if(!confirmed) { alert("CONFIRME A VERACIDADE!"); return; }
+            if(hasErr) return;
+
+            const btn = document.getElementById('btnFinalOrder');
+            btn.disabled = true;
+            document.getElementById('btnTxt').classList.add('hidden');
+            document.getElementById('btnLdr').classList.remove('hidden');
+
+            const now = new Date();
+            const payload = {
+                _subject: `Venda Nelson Games - ${now.toLocaleDateString()}`,
+                Nome: name, CPF: cpf, Nasc: birth, Email: email, WhatsApp: phone,
+                Endereco: document.getElementById('addrText').innerText, Numero: num,
+                Itens: cart.map(i => `${i.name} (R$ ${i.price})`).join('\n'),
+                Total: `R$ ${cart.reduce((s, i) => s + parseFloat(i.price), 0).toFixed(2)}`
+            };
+
+            try {
+                await fetch(`https://formsubmit.co/ajax/${ADMIN_EMAIL}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const total = cart.reduce((s, i) => s + parseFloat(i.price), 0).toFixed(2);
+                window.open(`https://wa.me/${WA_NUM}?text=${encodeURIComponent(`*PEDIDO ENVIADO!*\nCliente: ${name}\nTotal: R$ ${total}\n_E-mail de confirmação enviado para o administrador._`)}`);
+                
+                toast("PEDIDO ENVIADO COM SUCESSO!");
+                cart = []; updateCartUI(); closeModal('basketModal');
+            } catch (e) { alert("Erro de rede. Tente de novo."); }
+            finally { btn.disabled = false; document.getElementById('btnTxt').classList.remove('hidden'); document.getElementById('btnLdr').classList.add('hidden'); }
+        };
+
+        // --- SHOP ENGINE ---
+        function renderStore() {
+            const container = document.getElementById('grid');
+            const data = activeFilter === 'Tudo' ? allProducts : allProducts.filter(p => p.category === activeFilter.toUpperCase());
+            const total = Math.ceil(data.length / perPage);
+            const slice = data.slice((currentPage - 1) * perPage, currentPage * perPage);
+            
+            container.innerHTML = slice.length ? '' : '<div class="col-span-2 text-center py-24 opacity-30 italic">Nenhum item...</div>';
+            slice.forEach((p, idx) => {
+                const card = document.createElement('div');
+                const isD = (activeFilter === 'Tudo' && currentPage === 1 && idx < 2);
+                card.className = `product-card ${isD ? 'destaque' : ''}`;
+                card.onclick = () => openProduct(p);
+                card.innerHTML = `
+                    ${isD ? '<div class="destaque-badge">DESTAQUE</div>' : ''}
+                    <div class="img-container"><img src="${p.media[0]?.url || 'https://via.placeholder.com/200'}"></div>
+                    <div class="flex-1 flex flex-col justify-between">
+                        <div><span class="text-[9px] font-black text-blue-500 uppercase tracking-tighter">${p.category}</span><h3 class="font-bold text-[11px] line-clamp-1 mt-1 uppercase">${p.name}</h3></div>
+                        <p class="font-black text-green-600 text-sm mt-1">R$ ${parseFloat(p.price).toFixed(2)}</p>
+                    </div>`;
+                container.appendChild(card);
+            });
+            renderPagination(total);
+        }
+
+        function renderPagination(total) {
+            const nav = document.getElementById('pagination');
+            nav.innerHTML = ''; if (total <= 1) return;
+            for (let i = 1; i <= total; i++) {
+                const btn = document.createElement('button');
+                btn.className = `pg-btn ${i === currentPage ? 'active' : ''}`; btn.innerText = i;
+                btn.onclick = () => { currentPage = i; renderStore(); window.scrollTo(0,400); };
+                nav.appendChild(btn);
+            }
+        }
+
+        function renderMenu() {
+            const cats = ['TUDO', ...new Set(allProducts.map(p => p.category))];
+            const nav = document.getElementById('navCats');
+            const suggest = document.getElementById('catSug');
+            nav.innerHTML = ''; suggest.innerHTML = '';
+            cats.forEach(c => {
+                const active = (c === activeFilter.toUpperCase());
+                const b = document.createElement('button');
+                b.className = `px-5 py-2.5 border-2 border-black rounded-full retro-font text-[8px] whitespace-nowrap transition-all ${active ? 'bg-[#e52521] text-white shadow-[0_3px_0_#000] -translate-y-1' : 'bg-white text-gray-500'}`;
+                b.innerText = c; b.onclick = () => { activeFilter = (c === 'TUDO' ? 'Tudo' : c); currentPage = 1; renderStore(); renderMenu(); };
+                nav.appendChild(b); if(c !== 'TUDO') suggest.innerHTML += `<option value="${c}">`;
+            });
+        }
+
+        // --- ZOOM ENGINE ---
+        let scale = 1, posX = 0, posY = 0, isDragging = false, startX, startY;
+        window.openLightbox = () => {
+            if(!selectedProduct.media[currentImgIdx]) return;
+            document.getElementById('zoomImg').src = selectedProduct.media[currentImgIdx].url;
+            document.getElementById('lightbox').style.display = 'flex';
+            resetZoom();
+        };
+        window.closeLightbox = () => document.getElementById('lightbox').style.display = 'none';
+        window.zoomStep = (v) => { scale = Math.min(Math.max(1, scale + v), 5); updateTr(); };
+        window.resetZoom = () => { scale = 1; posX = 0; posY = 0; updateTr(); };
+        function updateTr() { document.getElementById('zoomImg').style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`; }
+        window.startPan = (e) => { if(scale <= 1) return; isDragging = true; const p = e.type.includes('touch') ? e.touches[0] : e; startX = p.clientX - posX; startY = p.clientY - posY; };
+        window.doPan = (e) => { if(!isDragging) return; const p = e.type.includes('touch') ? e.touches[0] : e; posX = p.clientX - startX; posY = p.clientY - startY; updateTr(); };
+        window.endPan = () => isDragging = false;
+
+        // --- ADMIN GESTOR ---
+        let adminFiles = [];
+        window.handleAdminFiles = () => { adminFiles = [...adminFiles, ...Array.from(document.getElementById('pFiles').files)]; updateAdminUI(); };
+        function updateAdminUI() { document.getElementById('adminFileList').innerHTML = adminFiles.map((f, i) => `<div class="file-row"><span class="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black">${i+1}</span><span class="flex-1 truncate text-xs text-white">${f.name}</span><div class="flex gap-2"><button onclick="moveF(${i},-1)" class="text-white"><i class="ph ph-caret-up"></i></button><button onclick="moveF(${i},1)" class="text-white"><i class="ph ph-caret-down"></i></button><button onclick="delF(${i})" class="text-red-500"><i class="ph ph-trash"></i></button></div></div>`).join(''); }
+        window.moveF = (i, d) => { const t = i + d; if(t<0 || t>=adminFiles.length) return; const tmp = adminFiles[i]; adminFiles[i] = adminFiles[t]; adminFiles[t] = tmp; updateAdminUI(); };
+        window.delF = (i) => { adminFiles.splice(i, 1); updateAdminUI(); };
+        window.doAdminLogin = () => { if(document.getElementById('admUser').value.toLowerCase() === 'admin' && document.getElementById('admPass').value === '5521') { document.getElementById('adminLogin').classList.add('hidden'); document.getElementById('adminForm').classList.remove('hidden'); } };
+
+        async function publishNow() {
+            const btn = document.getElementById('btnPub');
+            const n = document.getElementById('pName').value.trim();
+            const p = document.getElementById('pPrice').value.trim();
+            const c = document.getElementById('pCat').value.trim().toUpperCase() || "GERAL";
+            const d = document.getElementById('pDesc').value.trim();
+            if(!adminFiles.length || !n || !p) return alert("Preencha todos os campos!");
+            
+            btn.disabled = true;
+            btn.innerHTML = `<span class="loader"></span> POSTANDO...`;
+
+            try {
+                // 1. Fazer upload das imagens/vídeos para GitHub
+                const mediaUrls = [];
+                for (let i = 0; i < adminFiles.length; i++) {
+                    const file = adminFiles[i];
+                    const reader = new FileReader();
+                    await new Promise((resolve) => {
+                        reader.onload = async () => {
+                            const base64 = reader.result.split(',')[1];
+                            const filename = `${Date.now()}_${i}_${file.name}`;
+                            const path = file.type.includes('video') ? `movies/${filename}` : `images/${filename}`;
+                            
+                            const uploadUrl = `https://api.github.com/repos/${GITHUB_CONFIG.USER}/${GITHUB_CONFIG.REPO}/contents/${path}`;
+                            const response = await fetch(uploadUrl, {
+                                method: 'PUT',
+                                headers: {
+                                    'Authorization': `token ${GITHUB_CONFIG.TOKEN}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    message: `Upload ${filename}`,
+                                    content: base64,
+                                    branch: GITHUB_CONFIG.BRANCH
+                                })
+                            });
+
+                            if (response.ok) {
+                                const data = await response.json();
+                                mediaUrls.push({
+                                    url: `https://raw.githubusercontent.com/${GITHUB_CONFIG.USER}/${GITHUB_CONFIG.REPO}/${GITHUB_CONFIG.BRANCH}/${path}`,
+                                    type: file.type.includes('video') ? 'video' : 'photo'
+                                });
+                            }
+                            resolve();
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
+
+                // 2. Carregar produtos existentes
+                let products = [];
+                try {
+                    const url = `https://api.github.com/repos/${GITHUB_CONFIG.USER}/${GITHUB_CONFIG.REPO}/contents/produtos.json?ref=${GITHUB_CONFIG.BRANCH}`;
+                    const res = await fetch(url, {
+                        headers: { 'Authorization': `token ${GITHUB_CONFIG.TOKEN}` }
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        const content = atob(data.content);
+                        products = JSON.parse(content);
+                    }
+                } catch (e) {
+                    console.log("Arquivo não existe, criando novo");
+                }
+
+                // 3. Adicionar novo produto
+                const newProduct = {
+                    name: n,
+                    price: p,
+                    category: c,
+                    description: d,
+                    media: mediaUrls
+                };
+                products.unshift(newProduct);
+
+                // 4. Salvar produtos.json
+                const jsonContent = JSON.stringify(products, null, 2);
+                const base64Json = btoa(jsonContent);
+                
+                let sha = null;
+                try {
+                    const checkUrl = `https://api.github.com/repos/${GITHUB_CONFIG.USER}/${GITHUB_CONFIG.REPO}/contents/produtos.json?ref=${GITHUB_CONFIG.BRANCH}`;
+                    const checkRes = await fetch(checkUrl, {
+                        headers: { 'Authorization': `token ${GITHUB_CONFIG.TOKEN}` }
+                    });
+                    if (checkRes.ok) {
+                        const data = await checkRes.json();
+                        sha = data.sha;
+                    }
+                } catch (e) {}
+
+                const updateUrl = `https://api.github.com/repos/${GITHUB_CONFIG.USER}/${GITHUB_CONFIG.REPO}/contents/produtos.json`;
+                const updateRes = await fetch(updateUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Novo produto: ${n}`,
+                        content: base64Json,
+                        branch: GITHUB_CONFIG.BRANCH,
+                        sha: sha
+                    })
+                });
+
+                if (updateRes.ok) {
+                    toast("POSTADO NO GITHUB COM SUCESSO!");
+                    adminFiles = [];
+                    document.getElementById('pName').value = '';
+                    document.getElementById('pPrice').value = '';
+                    document.getElementById('pDesc').value = '';
+                    updateAdminUI();
+                    setTimeout(() => loadProducts(), 2000);
+                } else {
+                    alert("Erro ao salvar produtos.json");
+                }
+            } catch (e) {
+                console.error("Erro ao publicar", e);
+                alert("Erro ao enviar. Verifique as configurações do GitHub.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="ph-fill ph-rocket-launch"></i> PUBLICAR NO GITHUB`;
+            }
+        }
+
+        // --- SHOP UI ---
+        function openProduct(p) {
+            selectedProduct = p; currentImgIdx = 0;
+            document.getElementById('dtTitle').innerText = p.name; document.getElementById('dtCat').innerText = p.category;
+            document.getElementById('dtPrice').innerText = `R$ ${parseFloat(p.price).toFixed(2)}`;
+            document.getElementById('dtDesc').innerText = p.description; updateMainView(0);
+            document.getElementById('detThumbs').innerHTML = p.media.map((m, i) => `<button class="w-14 h-14 rounded-lg border-2 overflow-hidden flex-shrink-0" onclick="updateMainView(${i})"><img src="${m.url}" class="w-full h-full object-cover"></button>`).join('');
+            document.getElementById('detailModal').classList.replace('hidden', 'flex');
+        }
+        window.updateMainView = (idx) => {
+            currentImgIdx = idx; const h = document.getElementById('detHeroBox'); const m = selectedProduct.media[idx];
+            h.innerHTML = m.type === 'video' ? `<video src="${m.url}" controls class="h-full"></video>` : `<img src="${m.url}" class="h-full object-contain">`;
+        };
+        function addToBasket() { cart.push(selectedProduct); updateCartUI(); closeModal('detailModal'); toast("NA CESTA! 🍄"); }
+        function updateCartUI() {
+            const bar = document.getElementById('cartBar');
+            if(cart.length) { bar.classList.remove('hidden'); document.getElementById('qCount').innerText = cart.length; const total = cart.reduce((acc, i) => acc + parseFloat(i.price), 0); document.getElementById('vTotal').innerText = `R$ ${total.toFixed(2)}`; } else bar.classList.add('hidden');
+        }
+        function openBasket() {
+            const list = document.getElementById('basketItems');
+            const g = cart.reduce((acc, i) => { acc[i.name] = (acc[i.name] || 0) + 1; return acc; }, {});
+            list.innerHTML = Object.entries(g).map(([n, q]) => `<div class="bg-gray-50 p-5 rounded-2xl border-2 font-bold text-sm flex justify-between"><span>${q}x ${n}</span></div>`).join('');
+            document.getElementById('basketModal').classList.replace('hidden', 'flex');
+        }
+
+        // --- AUX ---
+        window.setFilter = (f) => { activeFilter = f; currentPage = 1; renderStore(); renderMenu(); };
+        function toggleAdmin() { const m = document.getElementById('adminPanel'); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; }
+        function closeModal(id) { document.getElementById(id).classList.replace('flex', 'hidden'); }
+        function toast(m) { const t = document.getElementById('toast'); document.getElementById('toast-message').innerText = m; t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 3000); }
+        
+        // --- START (PÁGINA PRIMEIRO, DADOS DEPOIS) ---
+        window.onload = () => {
+            setTimeout(loadProducts, 1000);
+        };
+    </script>
+</body>
+</html>
