@@ -1,0 +1,14 @@
+[
+  {
+    "name": "SUPER MARIO WORLD - SNES",
+    "price": "150.00",
+    "category": "RETRO",
+    "description": "Clássico absoluto do Super Nintendo. Cartucho salvando perfeitamente e labels originais.",
+    "media": [
+      {
+        "url": "https://raw.githubusercontent.com/websuporte17-bot/Produtosdg/main/images/mario.jpg",
+        "type": "photo"
+      }
+    ]
+  }
+]
