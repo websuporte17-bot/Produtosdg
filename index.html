@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nelson Games - Oficial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --mario-blue: #5c94fc; --mario-red: #e52521; --bg-color: #f4f5f7; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; overflow-x: hidden; color: #000; }
+        .retro-font { font-family: 'Press Start 2P', cursive; }
+        .header-bg { background-color: var(--mario-blue); width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .hero-image { width: 100%; max-width: 500px; height: auto; display: block; object-fit: cover; }
+        .mario-ground { height: 16px; background: repeating-linear-gradient(45deg, #d35400, #d35400 10px, #e67e22 10px, #e67e22 20px); border-top: 4px solid #000; width: 100%; }
+        .nav-scroll { display: flex; overflow-x: auto; gap: 10px; padding: 15px; scrollbar-width: none; }
+        .cat-btn { white-space: nowrap; padding: 8px 16px; border-radius: 20px; background: #fff; border: 2px solid #eee; font-size: 10px; font-weight: bold; text-transform: uppercase; cursor: pointer; color: #000; }
+        .cat-btn.active { background: var(--mario-red); color: #fff; border-color: #8b1512; }
+        .grid-loja { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; justify-items: center; max-width: 450px; margin: 0 auto; padding: 10px; }
+        .product-card { background: white; border-radius: 15px; padding: 10px; border: 2px solid #eee; width: 100%; max-width: 180px; cursor: pointer; }
+        .img-container { width: 100%; aspect-ratio: 1/1; border-radius: 10px; overflow: hidden; background: #f9f9f9; }
+        .img-container img, .img-container video { width: 100%; height: 100%; object-fit: cover; }
+        #pagination { display: none; justify-content: center; align-items: center; gap: 20px; padding: 20px 0; }
+        .admin-btn { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 15px; border-radius: 50%; z-index: 100; cursor: pointer; }
+        #adminModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1001; padding: 20px; overflow-y: auto; color: white; }
+        .input-admin { background: #222; border: 1px solid #444; border-radius: 8px; padding: 12px; width: 100%; margin-bottom: 10px; color: white; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; padding: 20px; overflow-y: auto; }
+        .modal-content { background: white; border-radius: 20px; padding: 20px; max-width: 400px; margin: 20px auto; border: 3px solid #000; color: #000; }
+        .btn-buy { background: var(--mario-red); color: #fff; width: 100%; padding: 16px; border-radius: 10px; font-weight: 900; text-transform: uppercase; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <header class="header-bg">
+        <img src="https://github.com/user-attachments/assets/d158e9a0-58c0-40df-9212-737aeb0f16f9" class="hero-image">
+    </header>
+    <div class="mario-ground"></div>
+
+    <div class="nav-scroll" id="menuCategorias"></div>
+
+    <div class="grid-loja" id="grid"></div>
+    <div id="pagination">
+        <button onclick="mudarPagina(-1)" id="btnPrev" class="cat-btn retro-font"> < </button>
+        <span id="pAtual" class="retro-font text-[10px]">01</span>
+        <button onclick="mudarPagina(1)" id="btnNext" class="cat-btn retro-font"> > </button>
+    </div>
+
+    <!-- Modal Detalhes -->
+    <div id="modalP" class="modal">
+        <div class="modal-content">
+            <div id="conteudoP"></div>
+            <button onclick="fecharModal()" class="mt-4 text-zinc-400 w-full text-center font-bold text-xs">VOLTAR</button>
+        </div>
+    </div>
+
+    <!-- Painel Gerenciador -->
+    <div class="admin-btn" onclick="abrirLogin()"><i class="ph-fill ph-robot text-2xl"></i></div>
+    <div id="adminModal">
+        <div class="max-w-md mx-auto">
+            <div class="flex justify-between mb-6">
+                <h2 class="retro-font text-sm">GERENCIADOR DE ITENS</h2>
+                <button onclick="fecharAdmin()" class="text-2xl">&times;</button>
+            </div>
+            <input type="text" id="pName" placeholder="Nome do Produto" class="input-admin">
+            <input type="text" id="pPrice" placeholder="Preço (Ex: 59.90)" class="input-admin">
+            <input type="text" id="pCat" placeholder="Categoria" class="input-admin">
+            <textarea id="pDesc" placeholder="Descrição completa" class="input-admin" rows="3"></textarea>
+            <input type="file" id="pFiles" accept="image/*,video/*" class="mb-4 text-xs block w-full text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white">
+            <button id="btnPub" onclick="publishNow()" class="w-full bg-green-600 py-4 rounded-xl font-bold retro-font text-[10px]">ENVIAR E SINCRONIZAR</button>
+        </div>
+    </div>
+
+    <script>
+        // Leitura do GitHub (Público)
+        const GITHUB_RAW = "https://raw.githubusercontent.com/websuporte17-bot/Produtosdg/main/produtos.json";
+        // Edição via sua API PHP
+        const API_URL = "https://dgapi.lovestoblog.com/phpbb/api.php";
+
+        let produtosOriginal = [], produtosFiltrados = [], pag = 1, catAtiva = "DESTAQUES";
+
+        $(document).ready(() => { carregar(); });
+
+        async function carregar() {
+            try {
+                // Adiciona timestamp para evitar cache do GitHub
+                const r = await fetch(GITHUB_RAW + "?v=" + Date.now());
+                produtosOriginal = await r.json();
+                gerarMenu();
+                filtrar("DESTAQUES");
+            } catch(e) { 
+                console.error("Erro ao carregar dados.");
+                document.getElementById('grid').innerHTML = "<p class='col-span-2 text-center py-10 opacity-50'>Erro ao carregar o catálogo.</p>";
+            }
+        }
+
+        function gerarMenu() {
+            const cats = [...new Set(produtosOriginal.map(p => p.category))];
+            const menu = document.getElementById('menuCategorias');
+            let html = `<button onclick="filtrar('DESTAQUES')" class="cat-btn" id="btn-DESTAQUES">DESTAQUES</button>`;
+            cats.forEach(c => { if(c) html += `<button onclick="filtrar('${c}')" class="cat-btn" id="btn-${c.replace(/\s/g, '_')}">${c}</button>`; });
+            menu.innerHTML = html;
+        }
+
+        function filtrar(c) {
+            catAtiva = c; pag = 1;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            const safeId = `btn-${c.replace(/\s/g, '_')}`;
+            if(document.getElementById(safeId)) document.getElementById(safeId).classList.add('active');
+            
+            if(c === "DESTAQUES") {
+                produtosFiltrados = produtosOriginal.filter(p => {
+                    const price = parseFloat(p.price.toString().replace(/[R$\s.]/g, '').replace(',', '.'));
+                    return price < 60; // Filtro de destaques
+                });
+            } else {
+                produtosFiltrados = produtosOriginal.filter(p => p.category === c);
+            }
+            render();
+        }
+
+        function render() {
+            const inicio = (pag - 1) * 6;
+            const itens = produtosFiltrados.slice(inicio, inicio + 6);
+            const grid = document.getElementById('grid');
+            
+            grid.innerHTML = itens.map((p, idx) => {
+                const isVideo = p.media[0].type === 'video';
+                const mediaTag = isVideo ? `<video src="${p.media[0].url}" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>` : `<img src="${p.media[0].url}">`;
+                return `
+                <div class="product-card" onclick="abrirP(${produtosOriginal.indexOf(p)})">
+                    <div class="img-container">${mediaTag}</div>
+                    <h3 class="text-[10px] font-bold uppercase truncate mt-3">${p.name}</h3>
+                    <p class="text-green-600 font-black text-sm">R$ ${p.price}</p>
+                </div>`;
+            }).join('');
+
+            const paginacao = document.getElementById('pagination');
+            if(produtosFiltrados.length > 6) {
+                paginacao.style.display = 'flex';
+                document.getElementById('pAtual').innerText = pag.toString().padStart(2, '0');
+                document.getElementById('btnPrev').disabled = pag === 1;
+                document.getElementById('btnNext').disabled = inicio + 6 >= produtosFiltrados.length;
+            } else { paginacao.style.display = 'none'; }
+        }
+
+        function abrirP(i) {
+            const p = produtosOriginal[i];
+            const isVideo = p.media[0].type === 'video';
+            const mediaTag = isVideo ? `<video src="${p.media[0].url}" controls autoplay class="w-full rounded-lg mb-4"></video>` : `<img src="${p.media[0].url}" class="w-full rounded-lg mb-4">`;
+            
+            document.getElementById('conteudoP').innerHTML = `
+                ${mediaTag}
+                <h2 class="text-lg font-black uppercase">${p.name}</h2>
+                <p class="text-green-600 text-2xl font-black my-2">R$ ${p.price}</p>
+                <p class="text-gray-500 text-xs mb-6">${p.description}</p>
+                <button class="btn-buy retro-font text-[10px]">COMPRAR AGORA</button>`;
+            document.getElementById('modalP').style.display = 'block';
+        }
+
+        async function publishNow() {
+            const btn = document.getElementById('btnPub');
+            const fileInput = document.getElementById('pFiles');
+            if(!fileInput.files.length) return alert("Selecione imagem ou vídeo!");
+            
+            btn.innerText = "SINCRONIZANDO..."; btn.disabled = true;
+
+            const reader = new FileReader();
+            reader.readAsDataURL(fileInput.files[0]);
+            reader.onload = async () => {
+                const payload = {
+                    name: document.getElementById('pName').value,
+                    price: document.getElementById('pPrice').value,
+                    category: document.getElementById('pCat').value,
+                    description: document.getElementById('pDesc').value,
+                    files: [reader.result]
+                };
+
+                try {
+                    const res = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await res.json();
+                    if(result.status === "sucesso") {
+                        alert("Sucesso! Produto e mídia enviados para o GitHub.");
+                        location.reload();
+                    } else {
+                        alert("Erro: " + result.message);
+                    }
+                } catch(e) { alert("Erro ao conectar com a API PHP."); }
+                finally { btn.innerText = "ENVIAR E SINCRONIZAR"; btn.disabled = false; }
+            };
+        }
+
+        function abrirLogin() { if(prompt("Usuário:") === "admin" && prompt("Senha:") === "5521") document.getElementById('adminModal').style.display='block'; }
+        function fecharAdmin() { document.getElementById('adminModal').style.display='none'; }
+        function fecharModal() { document.getElementById('modalP').style.display = 'none'; }
+        function mudarPagina(v) { pag += v; render(); window.scrollTo({top: 300, behavior: 'smooth'}); }
+    </script>
+</body>
+</html>
